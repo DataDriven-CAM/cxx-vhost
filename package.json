@@ -1,0 +1,14 @@
+{
+  "name": "cxx-vhost",
+  "version": "1.0.0",
+  "description": "vhost for uWebSockets",
+  "main": "index.js",
+  "repository": "https://github.com/DataDriven-CAM/cxx-vhost.git",
+  "author": "<mathmldashx@yahoo.com>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "doctest": "onqtam/doctest",
+    "mime-db": "^1.42.0"
+  }
+}
