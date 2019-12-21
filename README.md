@@ -26,4 +26,12 @@ as middleware.  Currently experimenting with branching and adding a use method t
                 sslApp.use(cors);
                 sslApp.use(vhost);
 
+                sslApp.listen(host, port, [port, directory1](auto *token) {
+                    if (token) {
+                        std::cout << "Thread " << std::this_thread::get_id() << " listening on port " << port << " serving " << directory1 << "..."<< std::endl;
+                    } else {
+                        std::cout << "Thread " << std::this_thread::get_id() << " failed to listen on port " << port << std::endl;
+                    }
+                }).run();
+
 ```
