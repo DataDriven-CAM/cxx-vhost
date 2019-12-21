@@ -15,7 +15,7 @@ Inspired by  [the `vhost@3.0.2` module](https://github.com/expressjs/vhost).
 
 ```
 
-as middleware.  Currently experimenting with branching and adding a use method to the uWS::TemplatedApp struct. Then
+as middleware.  Currently experimenting with [branching](https://github.com/rimmartin/uWebSockets) and adding a use method to the uWS::TemplatedApp struct. Then
 
 ```c++
 ...
