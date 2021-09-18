@@ -8,17 +8,18 @@
 #include <string_view>
 #include <regex>
 #include <functional>
+#include <ranges>
 
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h> 
 
-namespace pmc{
+namespace sylvanmats{
 
-    template <bool SSL>
+    template <bool ssl>
     struct vhost{
         std::string hostname{"*.localhost"};
-        std::function<void(uWS::HttpResponse<SSL>*, uWS::HttpRequest*)> handle{[](uWS::HttpResponse<SSL> *res, uWS::HttpRequest *req){}};
+        std::function<void(sylvanmats::http::Request*, sylvanmats::http::Response*)> handle{[](sylvanmats::http::Request *req, sylvanmats::http::Response *res){}};
         
         
         std::string ASTERISK_REGEXP = R"(\*)";
@@ -30,12 +31,12 @@ namespace pmc{
         std::regex regexp;
         bool firstHandling=true;
         
-        void operator()(uWS::HttpResponse<SSL> *res, uWS::HttpRequest *req) {
+        void operator()(sylvanmats::http::Request *req, sylvanmats::http::Response *res) {
             if(firstHandling){regexp=hostregexp(std::string_view(hostname));
                 firstHandling=false;}
             if(vhostof(req, regexp)){
-                handle(res, req);
-                req->setYield(false);
+                handle(req, res);
+                req->yield(false);
             }
         };
         
@@ -66,7 +67,7 @@ namespace pmc{
             return std::regex(source, std::regex_constants::ECMAScript | std::regex_constants::icase);
         };
         
-        bool vhostof(uWS::HttpRequest *req, std::regex& regexp){
+        bool vhostof(sylvanmats::http::Request *req, std::regex& regexp){
             bool ret=false;
             std::string hostname = hostnameof(req);
             std::smatch sm;
@@ -74,11 +75,12 @@ namespace pmc{
             return ret;
         }
         
-        std::string hostnameof(uWS::HttpRequest *req){
-            for(uWS::HttpRequest::HeaderIterator it=req->begin();it!=req->end();++it){
-                if((*it).first.compare("host")==0){
-                    size_t index=(*it).second.find(':');
-                    std::string hostname((*it).second.begin(), (*it).second.end());
+        std::string hostnameof(sylvanmats::http::Request *req){
+            for(unsigned int headerIndex=0;headerIndex<req->httpMessage->header_field().size();headerIndex++){
+                std::cout<<req->httpMessage->header_field(headerIndex)->field_name()->getText()<<" "<<req->httpMessage->header_field(headerIndex)->field_value(0)->getText()<<std::endl;
+                if(req->httpMessage->header_field(headerIndex)->field_name()->getText().compare("host")==0){
+                    size_t index=req->httpMessage->header_field(headerIndex)->field_value(0)->getText().find(':');
+                    std::string hostname(req->httpMessage->header_field(headerIndex)->field_value(0)->getText().begin(), req->httpMessage->header_field(headerIndex)->field_value(0)->getText().end());
                     if(index!=std::string::npos){
                         hostname=hostname.substr(0, index);
                     }
