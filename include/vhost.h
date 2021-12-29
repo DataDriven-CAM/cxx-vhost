@@ -32,8 +32,10 @@ namespace sylvanmats{
         bool firstHandling=true;
         
         void operator()(sylvanmats::http::Request *req, sylvanmats::http::Response *res) {
-            if(firstHandling){regexp=hostregexp(std::string_view(hostname));
-                firstHandling=false;}
+            if(firstHandling){
+                regexp=hostregexp(std::string_view(hostname));
+                firstHandling=false;
+            }
             if(vhostof(req, regexp)){
                 handle(req, res);
                 req->yield(false);
@@ -69,7 +71,7 @@ namespace sylvanmats{
         
         bool vhostof(sylvanmats::http::Request *req, std::regex& regexp){
             bool ret=false;
-            std::string hostname = hostnameof(req);
+            std::string&& hostname = hostnameof(req);
             std::smatch sm;
             if(std::regex_match(hostname, sm, regexp))ret=true;
             return ret;
@@ -77,10 +79,11 @@ namespace sylvanmats{
         
         std::string hostnameof(sylvanmats::http::Request *req){
             for(unsigned int headerIndex=0;headerIndex<req->httpMessage->header_field().size();headerIndex++){
-                std::cout<<req->httpMessage->header_field(headerIndex)->field_name()->getText()<<" "<<req->httpMessage->header_field(headerIndex)->field_value(0)->getText()<<std::endl;
-                if(req->httpMessage->header_field(headerIndex)->field_name()->getText().compare("host")==0){
-                    size_t index=req->httpMessage->header_field(headerIndex)->field_value(0)->getText().find(':');
-                    std::string hostname(req->httpMessage->header_field(headerIndex)->field_value(0)->getText().begin(), req->httpMessage->header_field(headerIndex)->field_value(0)->getText().end());
+//                std::cout<<req->httpMessage->header_field(headerIndex)->field_name()->getText()<<"| "<<req->httpMessage->header_field(headerIndex)->field_value(0)->getText()<<std::endl;
+                if(req->httpMessage->header_field(headerIndex)->field_name()->getText().compare("Host")==0){
+                    std::string value=req->httpMessage->header_field(headerIndex)->field_value(0)->getText();
+                    std::string hostname(value.begin(), value.end());
+                    size_t index=hostname.find(':');
                     if(index!=std::string::npos){
                         hostname=hostname.substr(0, index);
                     }
