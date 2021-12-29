@@ -15,19 +15,21 @@ Inspired by  [the `vhost@3.0.2` module](https://github.com/expressjs/vhost).
 
 ```
 
-as middleware.  Currently sylvanhttp is unpublished
+as middleware for [sylvan-pod-server](https://github.com/DataDriven-CAM/sylvan-pod-server.git)
 
 ```c++
 ...
      pmc::mimetypes mimetypes("./cpp_modules/mime-db/db.json");
-    sylvanmats::Server server(host, 8080);
-    server([&mimetypes, &host](sylvanmats::ClientLiaison& liaison){
-            pmc::ldp<true> ldp;
-            sylvanmats::vhost<true> vhost{.hostname = "*."+host,
-                                   .handle = [&mimetypes, &ldp](sylvanmats::http::Request *req, sylvanmats::http::Response *res){
-                                        std::cout<<"vhost handle "<<std::endl;
-                                        ldp(req, res);
-                                   }};
-        liaison.use(vhost);
+    sylvanmats::Server server(mimetypes, host, port);
+    server([&vhostDirectory, &mimetypes, &host, &port](sylvanmats::ClientLiaison& liaison){
+        pmc::ldp<true> ldp;
+        pmc::cors<true> cors{.Origin = "https://"+host+":"+std::to_string(port)};
+        sylvanmats::vhost<true> vhost{.hostname = "*."+host,
+                               .handle = [&vhostDirectory, &mimetypes, &ldp](sylvanmats::http::Request *req, sylvanmats::http::Response *res){
+                                    ldp(req, res);
+                                    sylvanmats::RESTransfer transfer(vhostDirectory+"/roger.localhost/public");
+                                    transfer(req, res);
+                               }};
+        liaison.use(std::move(vhost));
     });
 ```

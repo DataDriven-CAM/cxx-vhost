@@ -87,6 +87,7 @@ namespace sylvanmats{
                     if(index!=std::string::npos){
                         hostname=hostname.substr(0, index);
                     }
+                    req->clientHost.assign(hostname);
                     return hostname;
                 }
             }
